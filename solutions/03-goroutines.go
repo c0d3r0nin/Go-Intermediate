@@ -1,0 +1,54 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"sync"
+)
+
+// collatzSteps counts how many steps n needs to reach 1.
+func collatzSteps(n int) int {
+	steps := 0
+	for n != 1 {
+		if n%2 == 0 {
+			n = n / 2
+		} else {
+			n = 3*n + 1
+		}
+		steps++
+	}
+	return steps
+}
+
+func main() {
+	in := bufio.NewReader(os.Stdin)
+	var n int
+	fmt.Fscan(in, &n)
+	nums := make([]int, n)
+	for i := range nums {
+		fmt.Fscan(in, &nums[i])
+	}
+
+	results := make([]int, n)
+	var wg sync.WaitGroup
+	for i, v := range nums {
+		wg.Add(1)
+		// TODO: start one goroutine per number; each stores its own result
+		go func(k int, value int) {
+
+			results[k] = collatzSteps(value)
+			wg.Done()
+		}(i, v)
+
+	}
+	// TODO: wait for every goroutine here, before anything below runs
+	wg.Wait()
+
+	total := 0
+	for _, r := range results {
+		fmt.Println(r)
+		total += r
+	}
+	fmt.Printf("total: %d\n", total)
+}
